@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Incident
-
+from .models import Volunteer, PublicReport
 class IncidentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Incident
@@ -21,3 +21,15 @@ class IncidentSerializer(serializers.ModelSerializer):
             "severity": {"label": "Severity Level"},
         }
    # include all fields in the model can restrict later by fields = ['id', 'type', 'location', 'severity']
+
+
+class VolunteerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Volunteer
+        fields = "__all__"
+
+
+class PublicReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PublicReport
+        fields = "__all__"
