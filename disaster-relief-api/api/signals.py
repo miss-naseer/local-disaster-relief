@@ -1,6 +1,7 @@
-from django.contrib.auth.models import Group
-from django.db.models.signals import post_migrate
+from django.contrib.auth.models import Group, User, get_user_model
+from django.db.models.signals import post_migrate, post_save
 from django.dispatch import receiver
+from .models import UserProfile  # assuming you already have a UserProfile linked to User
 
 @receiver(post_migrate)
 def create_user_roles(sender, **kwargs):
@@ -11,9 +12,6 @@ def create_user_roles(sender, **kwargs):
         Group.objects.get_or_create(name=role)
 
 
-from django.db.models.signals import post_save
-from django.contrib.auth import get_user_model
-from .models import UserProfile  # assuming you already have a UserProfile linked to User
 
 User = get_user_model()
 
@@ -23,4 +21,8 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created:
         # Create a UserProfile and assign default role
         UserProfile.objects.create(user=instance, role="public")  
-        # 👆 you can change "public" to "volunteer" if you want default volunteer role
+
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.userprofile.save()
