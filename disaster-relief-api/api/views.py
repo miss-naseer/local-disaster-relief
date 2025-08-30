@@ -1,38 +1,20 @@
-from django.shortcuts import render
-from rest_framework import viewsets, filters, generics, permissions
-from .models import Incident, Report
-from .serializers import IncidentSerializer,  ReportSerializer
-from rest_framework.permissions import IsAuthenticated
-from .permissions import IsVolunteer, IsAdmin, IsPublic
-from .models import Report,  Assignment, UserProfile
-from .serializers import ReportSerializer, AssignmentSerializer
-from django.contrib.auth.decorators import user_passes_test
-
-
-# Create your views here.
-
-class IncidentViewSet(viewsets.ModelViewSet):
-    queryset = Incident.objects.all().order_by("-created_at")
-    serializer_class = IncidentSerializer
-    filter_backends = [filters.SearchFilter]
-    search_fields = ["type", "severity", "status", "location", "title"]
-
-
-
-
-
-
-
-
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, filters, permissions, generics
 from rest_framework.response import Response
-from rest_framework.decorators import action
 from rest_framework.views import APIView
-from django.conf import settings
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .models import Report, Assignment
-from .serializers import ReportSerializer, UserProfileSerializer, AssignmentSerializer
-from .permissions import IsAdmin, IsVolunteer, IsPublic
+from .models import Incident, Report, Assignment, UserProfile
+from .serializers import (
+    IncidentSerializer,
+    ReportSerializer,
+    AssignmentSerializer,
+    UserProfileSerializer,
+    UserSerializer,
+    RegisterSerializer,
+    CustomTokenObtainPairSerializer,
+)
+from .permissions import IsVolunteer, IsAdmin, IsPublic
 
 
 # ---- Role Checks ----
@@ -43,7 +25,15 @@ def is_volunteer(user):
     return hasattr(user, "userprofile") and user.userprofile.role == "volunteer"
 
 
-# ---- ViewSets ----
+# ---- Incident ----
+class IncidentViewSet(viewsets.ModelViewSet):
+    queryset = Incident.objects.all().order_by("-created_at")
+    serializer_class = IncidentSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["type", "severity", "status", "location", "title"]
+
+
+# ---- Reports ----
 class ReportViewSet(viewsets.ModelViewSet):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
@@ -57,6 +47,7 @@ class ReportViewSet(viewsets.ModelViewSet):
         return super().get_permissions()
 
 
+# ---- Volunteers ----
 class VolunteerViewSet(viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
@@ -68,6 +59,7 @@ class VolunteerViewSet(viewsets.ModelViewSet):
         return super().get_permissions()
 
 
+# ---- Assignments ----
 class AssignmentViewSet(viewsets.ModelViewSet):
     queryset = Assignment.objects.all()
     serializer_class = AssignmentSerializer
@@ -76,7 +68,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         user = self.request.user
         if is_admin(user):
-            serializer.save()  # Admins can assign
+            serializer.save()
         else:
             raise permissions.PermissionDenied("Only admins can assign tasks.")
 
@@ -87,7 +79,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         if is_admin(user):
             serializer.save()  # Admins can reassign or change status
         elif is_volunteer(user) and assignment.volunteer.user == user:
-            serializer.save()  # Volunteers can only update their own status
+            serializer.save()  # Volunteers update their own status
         else:
             raise permissions.PermissionDenied("Not allowed.")
 
@@ -105,3 +97,18 @@ class PublicDashboard(APIView):
 
     def get(self, request):
         return Response({"message": "Welcome, Public User!"})
+
+
+# ==============================
+# 🔹 Authentication (JWT)
+# ==============================
+
+# ---- Register ----
+class RegisterView(generics.CreateAPIView):
+    serializer_class = RegisterSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+# ---- Login (JWT) ----
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
