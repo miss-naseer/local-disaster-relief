@@ -22,4 +22,8 @@ urlpatterns = [
     path('api/', include('api.urls')),
     path('api/', include('relief_app.urls')), 
     path('api-auth/', include('rest_framework.urls')), 
+    path('', include('api.urls')),  # include all API routes
 ]
+from django.contrib import admin
+from django.urls import path, include
+
