@@ -114,9 +114,5 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['username'] = user.username
         token['email'] = user.email
 
-        # If you want to include related profile fields (optional):
-        if hasattr(user, 'userprofile'):
-            token['location'] = user.userprofile.location
-            token['phone_number'] = user.userprofile.phone_number
 
         return token

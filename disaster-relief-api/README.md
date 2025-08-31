@@ -1,38 +1,203 @@
-# Relief Management System
+Local Disaster Relief API
 
-## Overview
-The Relief Management System is a Django-based project designed to manage disaster relief operations.  
-It helps track incidents (such as floods, fires, and earthquakes), set up relief camps, register volunteers, and manage resources.  
-The goal is to provide an organized way to respond to disasters and support affected communities.
+A RESTful API built with Django + Django REST Framework + SimpleJWT to manage disaster relief efforts.
+It allows users to register, log in, create incidents, list relief items, and request support.
 
-## Features (Planned)
-- Incident Management 
-- Relief Camp Management (coming soon)
-- Volunteer Management (coming soon)
-- Resource Management (coming soon)
-- Admin Dashboard
-- REST API Endpoints for external apps
+⚡ Authentication Flow
 
-## What Has Been Accomplished So Far
-- Django project setup (`relief`).
-- Created `Incident` model with fields (title, description, location, severity, date, etc.).
-- Implemented Django REST Framework serializers and API views for `Incident`.
-- Tested CRUD operations for incidents (create, list, update, delete).
-- Integrated Incident management into Django Admin for easy management.
+We use JWT (JSON Web Tokens) for authentication.
 
-## Challenges Faced
-- Serializer field ordering in Django REST framework.
-- Migration issues (no migrations applied at first).
-- Remembering/handling Django superuser credentials.
+Register → Create a new user.
 
-**How They Were Solved:**
-- Explored different serializer configurations (still pending refinement).
-- Re-applied and confirmed migrations.
-- Created a new superuser when the old password was forgotten.
+Login → Get access & refresh tokens.
 
-## What’s Next
-- Create and integrate the `ReliefCamp` model.
-- Build `Volunteer` and `Resource` models.
-- Establish relationships between incidents, camps, volunteers, and resources.
-- Improve API responses and user-friendly testing.
-- Finalize the Admin dashboard for all models.
+Use Access Token → Authenticate API requests.
+
+Refresh Token → Get new access token when expired.
+
+📌 Important: Every protected request must include:
+
+Authorization: Bearer <your-access-token>
+
+🚀 API Endpoints & Testing Guide
+1. Register a New User
+
+POST /api/register/
+
+Request body:
+
+{
+  "username": "test_user",
+  "email": "user@example.com",
+  "password": "password123"
+  "password2": "password123"
+}
+
+
+Response:
+
+{
+  "id": 1,
+  "username": "test_user",
+  "email": "user@example.com"
+}
+
+2. Login (Obtain JWT Tokens)
+
+POST /api/token/
+
+Request body:
+
+{
+  "username": "test_user",
+  "password": "password123"
+}
+
+
+Response:
+
+{
+  "refresh": "long-refresh-token",
+  "access": "short-access-token"
+}
+
+3. Refresh Access Token
+
+POST /api/token/refresh/
+
+Request body:
+
+{
+  "refresh": "long-refresh-token"
+}
+
+
+Response:
+
+{
+  "access": "new-access-token"
+}
+
+4. List Relief Items (Protected)
+
+GET /api/relief/items/
+
+Headers:
+
+Authorization: Bearer <access-token>
+
+
+Response (example):
+
+[
+  {
+    "id": 1,
+    "name": "Blanket",
+    "description": "Warm blanket for displaced families",
+    "quantity": 100
+  },
+  {
+    "id": 2,
+    "name": "Rice",
+    "description": "50kg bags of rice",
+    "quantity": 20
+  }
+]
+
+5. Create a Relief Item (Admin Only)
+
+POST /api/relief/items/
+
+Headers:
+
+Authorization: Bearer <access-token>
+
+
+Request body:
+
+{
+  "name": "Water Bottles",
+  "description": "Clean drinking water",
+  "quantity": 200
+}
+
+
+Response:
+
+{
+  "id": 3,
+  "name": "Water Bottles",
+  "description": "Clean drinking water",
+  "quantity": 200
+}
+
+6. Request a Relief Item (User)
+
+POST /api/relief/requests/
+
+Headers:
+
+Authorization: Bearer <access-token>
+
+
+Request body:
+
+{
+  "item": 1,
+  "quantity": 2
+}
+
+
+Response:
+
+{
+  "id": 5,
+  "item": "Blanket",
+  "quantity": 2,
+  "status": "Pending",
+  "requested_by": "john_doe"
+}
+
+7. Report an Incident (User)
+
+POST /api/incidents/
+
+Headers:
+
+Authorization: Bearer <access-token>
+
+
+Request body:
+
+{
+  "title": "Flood in Kano",
+  "description": "Heavy rainfall has displaced families.",
+  "location": "Kano"
+}
+
+
+Response:
+
+{
+  "id": 2,
+  "title": "Flood in Kano",
+  "description": "Heavy rainfall has displaced families.",
+  "location": "Kano",
+  "reported_by": "john_doe"
+}
+
+✅ Testing Checklist
+
+Register a new user → /api/register/
+
+Login and get tokens → /api/token/
+
+Use access token to:
+
+List relief items → /api/relief/items/
+
+Create a relief request → /api/relief/requests/
+
+Report an incident → /api/incidents/
+
+Refresh token if expired → /api/token/refresh/

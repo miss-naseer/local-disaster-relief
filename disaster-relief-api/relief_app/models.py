@@ -54,3 +54,31 @@ class PublicReport(models.Model):
 
 
 
+
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class ReliefItem(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    quantity = models.PositiveIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+
+class ReliefRequest(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="requests")
+    item = models.ForeignKey(ReliefItem, on_delete=models.CASCADE, related_name="requests")
+    quantity_requested = models.PositiveIntegerField()
+    status = models.CharField(
+        max_length=50,
+        choices=[("pending", "Pending"), ("approved", "Approved"), ("rejected", "Rejected")],
+        default="pending"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} requested {self.item.name}"

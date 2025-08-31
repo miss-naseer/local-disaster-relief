@@ -24,9 +24,10 @@ urlpatterns = [
     
     # API routes
     path('api/', include('api.urls')),
-    path('api/', include('relief_app.urls')),
+    path('relief/', include('relief_app.urls')),
 
     # For DRF browsable API login/logout
     path('api-auth/', include('rest_framework.urls')),
+    path("api/relief/", include("relief_app.urls")),  
 ]
 

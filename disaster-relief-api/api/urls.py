@@ -18,4 +18,5 @@ urlpatterns = [
     path("login/", CustomTokenObtainPairView.as_view(), name="login"),
     path("volunteer-dashboard/", VolunteerDashboard.as_view(), name="volunteer-dashboard"),
     path("public-dashboard/", PublicDashboard.as_view(), name="public-dashboard"),
+    
 ]

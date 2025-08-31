@@ -112,3 +112,4 @@ class RegisterView(generics.CreateAPIView):
 # ---- Login (JWT) ----
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+

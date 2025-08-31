@@ -1,9 +1,8 @@
 from django.shortcuts import render
 from rest_framework import generics, permissions, viewsets
-from .models import Incident
-from .serializers import IncidentSerializer
-from .models import Volunteer, PublicReport
-from .serializers import VolunteerSerializer, PublicReportSerializer 
+from .serializers import IncidentSerializer 
+from .models import Volunteer, PublicReport, Incident, ReliefItem, ReliefRequest
+from .serializers import VolunteerSerializer, PublicReportSerializer , ReliefItemSerializer, ReliefRequestSerializer
 
 # List all incidents OR create a new one
 class IncidentListCreateView(generics.ListCreateAPIView):
@@ -45,3 +44,21 @@ class PublicReportViewSet(viewsets.ModelViewSet):
     queryset = PublicReport.objects.all()
     serializer_class = PublicReportSerializer
 
+
+
+# List + Create Relief Items
+class ReliefItemListCreateView(generics.ListCreateAPIView):
+    queryset = ReliefItem.objects.all()
+    serializer_class = ReliefItemSerializer
+
+# List + Create Relief Requests
+# class ReliefRequestListCreateView(generics.ListCreateAPIView):
+#     queryset = ReliefRequest.objects.all()
+#     serializer_class = ReliefRequestSerializer
+    
+class ReliefRequestListCreateView(generics.ListCreateAPIView):
+    queryset = ReliefRequest.objects.all()
+    serializer_class = ReliefRequestSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
